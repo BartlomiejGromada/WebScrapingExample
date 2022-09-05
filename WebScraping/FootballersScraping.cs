@@ -1,10 +1,11 @@
-﻿using WebScraping.Entity;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
+using WebScraping.Entity;
+using WebScraping.Interfaces;
 
 namespace WebScraping.WebScraping
 {
-    public class FootballersScraping
+    public class FootballersScraping : IImportableToExcel<Footballer?>
     {
         private const string FOOTBALLERS_WEB_LINK = @"https://www.theguardian.com/football/datablog/2012/dec/24/world-best-footballers-top-100-list#data";
         private readonly HtmlWeb _web;
@@ -13,8 +14,9 @@ namespace WebScraping.WebScraping
         {
             _web = new HtmlWeb();
         }
-        public IEnumerable<Footballer> GetFootballers()
+        public IEnumerable<Footballer?> GetItems()
         {
+            Console.WriteLine("START GETTING FOOTBALLERS....");
             var htmlDoc = _web.Load(FOOTBALLERS_WEB_LINK);
             var rows = htmlDoc.QuerySelectorAll("table tbody tr");
             for (int i = 0; i < rows.Count; i++)
@@ -27,8 +29,11 @@ namespace WebScraping.WebScraping
                 var nationality = row.QuerySelector($"td #table-cell-11683-{i}-4").InnerText;
                 int.TryParse(row.QuerySelector($"td #table-cell-11683-{i}-5").InnerText, out int age);
 
-                yield return new Footballer(id, fullName, position, club, nationality, age);
+                var footballer = new Footballer(id, fullName, position, club, nationality, age);
+                Console.WriteLine(footballer);
+                yield return footballer;
             }
+            Console.WriteLine("END GETTING FOOTBALLERS....");
         }
     }
 }

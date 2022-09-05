@@ -4,6 +4,7 @@ namespace WebScraping.Entity
 {
     public class Country
     {
+        public int Id { get; set; }
         public string? Name { get; set; }
         public string? Area { get; set; }
         public string? Population { get; set; }
@@ -16,7 +17,6 @@ namespace WebScraping.Entity
         public string? Phone { get; set; }
         public string? PostalCodeFormat { get; set; }
         public string? Languages { get; set; }
-        public IEnumerable<Country>? Neighbours { get; set; }
 
         public override string? ToString()
         {
@@ -24,7 +24,6 @@ namespace WebScraping.Entity
                 $"Capital: {Capital} - Continent: {Continent} - CurrencyCode: {CurrencyCode} " +
                 $"CurrencyName: {CurrencyName} - Phone: {Phone} - PostalCodeFormat: {PostalCodeFormat} " +
                 $"Languages: {Languages} ");
-            Neighbours?.ToList().ForEach((country) => sb.Append($"{country.Name} "));
 
             return sb.ToString();
         }

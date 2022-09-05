@@ -1,25 +1,33 @@
 ﻿using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using WebScraping.Entity;
+using WebScraping.Interfaces;
 
 namespace WebScraping.WebScraping
 {
-    public class CountriesScraping
+    public class CountriesScraping : IImportableToExcel<Country?>
     {
         private const string COUNTRIES_WEB_LINK = @"http://example.python-scraping.com";
-        private readonly HtmlWeb _web;
+        private readonly HtmlWeb web;
+
         public CountriesScraping()
         {
-            _web = new HtmlWeb();
+            web = new HtmlWeb();
         }
-        public IEnumerable<Country?> GetCountries()
+        public IEnumerable<Country?> GetItems()
         {
+            Console.WriteLine("START GETTING COUNTRIES....");
             var countryLinks = GetAllCountriesLinks();
+            int counter = 0;
 
             foreach (var link in countryLinks)
             {
-                yield return GetCountryInfo(link);
+                counter++;
+                if (counter > 100)
+                    yield break;
+                yield return GetCountryInfo(link, counter);
             }
+            Console.WriteLine("END GETTING COUNTRIES....");
         }
 
         private List<string> GetAllCountriesLinks()
@@ -29,7 +37,7 @@ namespace WebScraping.WebScraping
             HtmlDocument? htmlDoc;
             do
             {
-                htmlDoc = _web.Load($"http://example.python-scraping.com/places/default/index/{counter}");
+                htmlDoc = web.Load($"http://example.python-scraping.com/places/default/index/{counter}");
                 countriesLinks.AddRange(GetLinksFromOneSite(htmlDoc));
                 counter++;
             } while (IsNextPage(htmlDoc));
@@ -59,15 +67,16 @@ namespace WebScraping.WebScraping
             return nextLink != null;
         }
 
-        private Country? GetCountryInfo(string url)
+        private Country? GetCountryInfo(string url, int id)
         {
-            var htmlDoc = _web.Load(url);
+            var htmlDoc = web.Load(url);
             var rows = htmlDoc.QuerySelectorAll("tr td.w2p_fw").Skip(1).ToList();
 
             if (rows != null && rows.Count > 0)
             {
                 var country = new Country()
                 {
+                    Id = id,
                     Area = rows[0].InnerText,
                     Population = rows[1].InnerText,
                     Iso = rows[2].InnerText,
@@ -82,11 +91,11 @@ namespace WebScraping.WebScraping
                     Languages = rows[12].InnerText,
                 };
 
+                Console.WriteLine(country);
                 return country;
             }
 
             return null;
         }
-
     }
 }
